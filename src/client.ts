@@ -1,12 +1,14 @@
-import { Client } from "discord.js";
+import { Client, TextChannel } from "discord.js";
 
 import "./structures";
 import "./command-handler";
 import "./commands";
+import "./systems/database";
 
 import EventHandler from "./event-handler";
-
+import ClientTools from "./utils/client-tools";
 import logger from "./logger";
+import { LogChannelId } from "./settings";
 
 const client = new Client({
   partials: ["GUILD_MEMBER", "CHANNEL", "MESSAGE", "REACTION", "USER"],
@@ -31,8 +33,21 @@ const client = new Client({
   },
 });
 
+declare module "discord.js" {
+  interface Client {
+    logChannel: TextChannel;
+
+    tools: typeof ClientTools;
+  }
+}
+
+client.tools = ClientTools;
+
 client.on("ready", () => {
+  client.logChannel = <TextChannel>client.channels.resolve(LogChannelId);
+
   EventHandler(client);
+
   logger.info("Ready!");
 });
 

@@ -1,6 +1,5 @@
 import { Collection, Message } from "discord.js";
 import { Prefix } from "./settings";
-import colors from "colors";
 import logger from "./logger";
 
 export default class CommandHandler {
@@ -37,6 +36,6 @@ export abstract class Command {
     CommandHandler.commands.set(this.name.toLowerCase(), this);
     const prev = CommandHandler.categories.get(this.category);
     CommandHandler.categories.set(this.category, prev && Array.isArray(prev) ? [...prev, this.name] : [this.name]);
-    logger.info(colors.cyan(`${this.name} command init finished!`));
+    logger.info(`${this.name} command init finished!`);
   }
 }
