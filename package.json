@@ -1,0 +1,15 @@
+{
+  "name": "szeki_counter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/CsiPA0723/SzekiCounter",
+  "author": {
+    "name": "Péter Csizmadia",
+    "email": "csizipeti0723@gmail.com"
+  },
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {},
+  "dependencies": {
+    "discord.js": "^12.5.3"
+  }
+}
