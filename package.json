@@ -1,15 +1,59 @@
 {
   "name": "szeki_counter",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "node --trace-warnings --enable-source-maps main.js",
+    "build": "wp",
+    "serve": "wp --config webpack.config.dev.js",
+    "dev": "nodemon --require dotenv/config --trace-warnings --enable-source-maps -w ./dist ./dist/main.js",
+    "prepare": "husky install"
+  },
   "repository": "https://github.com/CsiPA0723/SzekiCounter",
   "author": {
     "name": "Péter Csizmadia",
     "email": "csizipeti0723@gmail.com"
   },
   "license": "GPL-3.0-or-later",
-  "devDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts}": "eslint --fix"
+  },
+  "devDependencies": {
+    "@types/luxon": "^1.27.1",
+    "@types/node": "^16.4.5",
+    "@types/ts-nameof": "^4.2.1",
+    "@types/webpack-plugin-serve": "^1.4.1",
+    "@typescript-eslint/eslint-plugin": "^4.28.5",
+    "@typescript-eslint/parser": "^4.28.5",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "copy-webpack-plugin": "^9.0.1",
+    "eslint": "^7.31.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "fork-ts-checker-webpack-plugin": "^6.2.13",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.1.1",
+    "nodemon": "^2.0.12",
+    "prettier": "^2.3.2",
+    "ts-loader": "^9.2.4",
+    "ts-nameof": "^5.0.0",
+    "typescript": "^4.3.5",
+    "webpack": "^5.47.0",
+    "webpack-nano": "^1.1.1",
+    "webpack-node-externals": "^3.0.0",
+    "webpack-plugin-serve": "^1.5.0"
+  },
   "dependencies": {
-    "discord.js": "^12.5.3"
+    "chart.js": "^3.5.0",
+    "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0",
+    "luxon": "^2.0.1",
+    "mariadb": "^2.5.4",
+    "winston": "^3.3.3"
   }
 }
