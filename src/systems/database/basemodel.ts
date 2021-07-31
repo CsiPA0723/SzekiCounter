@@ -28,10 +28,10 @@ export abstract class Model<Attributes, PrimaryKey> {
   public abstract tableName: string;
   public abstract columns: ModelColumns<Attributes>;
 
-  private isNotDefined = true;
+  private isDefined = false;
 
   public async findByPK(primaryKey: PrimaryKey): Promise<Attributes> {
-    if (this.isNotDefined) throw new Error("Model is not defined!");
+    if (!this.isDefined) throw new Error("Model is not defined!");
     try {
       const sql = `SELECT * FROM ${this.tableName} WHERE ${Object.getOwnPropertyNames(primaryKey)[0]} = ?;`;
       const rows: Attributes[] = await (await connection).query(sql, [primaryKey]);
@@ -42,7 +42,7 @@ export abstract class Model<Attributes, PrimaryKey> {
   }
 
   public async deleteByPk(primaryKey: PrimaryKey): Promise<unknown[]> {
-    if (this.isNotDefined) throw new Error("Model is not defined!");
+    if (!this.isDefined) throw new Error("Model is not defined!");
     try {
       const sql = `DELETE FROM ${this.tableName} WHERE ${Object.getOwnPropertyNames(primaryKey)[0]} = ?;`;
       const rows: unknown[] = await (await connection).query(sql, [primaryKey]);
@@ -54,7 +54,7 @@ export abstract class Model<Attributes, PrimaryKey> {
 
   /** @param where - `[{foo: foo}, "AND", {bar: bar}, "OR", {fooBar: foo.bar}]` */
   private async find(where: Partial<Attributes | "OR" | "AND" | "NOT">[]): Promise<Attributes[]> {
-    if (this.isNotDefined) throw new Error("Model is not defined!");
+    if (!this.isDefined) throw new Error("Model is not defined!");
     const { data, whereString } = buildWhereClauseFrom(where);
     const sql = `SELECT * FROM ${this.tableName} WHERE ${whereString};`;
     try {
@@ -86,6 +86,7 @@ export abstract class Model<Attributes, PrimaryKey> {
   }
 
   public async create(data: Attributes): Promise<{ runResult: unknown[]; object: Attributes }> {
+    if (!this.isDefined) throw new Error("Model is not defined!");
     const propNames = Object.getOwnPropertyNames(data);
     const sql = `INSERT INTO ${this.tableName} (${propNames.join(", ")}) VALUES (:${propNames.join(", :")});`;
     try {
@@ -103,7 +104,7 @@ export abstract class Model<Attributes, PrimaryKey> {
    *  - Defaults to `{}`
    */
   public async upsert(data: Attributes, excludeData?: PartialNulls<Attributes>): Promise<unknown> {
-    if (this.isNotDefined) throw new Error("Model is not defined!");
+    if (!this.isDefined) throw new Error("Model is not defined!");
     const propNames = Object.getOwnPropertyNames(data);
 
     const updateData: PartialNulls<Attributes> = {
@@ -128,7 +129,7 @@ export abstract class Model<Attributes, PrimaryKey> {
     data: Partial<Attributes>,
     where: Partial<Attributes | "OR" | "AND" | "NOT">[]
   ): Promise<unknown> {
-    if (this.isNotDefined) throw new Error("Model is not defined!");
+    if (!this.isDefined) throw new Error("Model is not defined!");
     const { data: whereData, whereString } = buildWhereClauseFrom(where);
     const sql = `UPDATE ${this.tableName} SET ${buildUpdateSetsFrom(data)} WHERE ${whereString};`;
     try {
@@ -140,12 +141,12 @@ export abstract class Model<Attributes, PrimaryKey> {
   }
 
   public define(): this {
-    if (!this.isNotDefined) throw new Error("Model alredy defined!");
+    if (this.isDefined) throw new Error("Model alredy defined!");
     try {
       connection.then((conn) => {
         conn.query(`CREATE TABLE IF NOT EXISTS ${this.tableName} (${buildColumnsFrom(this.columns).join(", ")});`);
       });
-      this.isNotDefined = false;
+      this.isDefined = true;
       return this;
     } catch (error) {
       logger.error(error?.stack || error || `${error}`);
