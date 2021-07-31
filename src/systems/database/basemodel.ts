@@ -2,6 +2,7 @@ import logger from "../../logger";
 import DataTypes from "./datatypes";
 import buildColumnsFrom from "./utils/buildColumnsFrom";
 import buildWhereClauseFrom from "./utils/buildWhereClauseFrom";
+import buildUpdateSetsFrom from "./utils/buildUpdateSetsFrom";
 import { connection } from "./";
 
 export type ModelColumns<T> = {
@@ -17,6 +18,10 @@ export type ModelColumns<T> = {
       foreignKey: string;
     };
   };
+};
+
+type PartialNulls<T> = {
+  [P in keyof T]+?: null;
 };
 
 export abstract class Model<Attributes, PrimaryKey> {
@@ -86,6 +91,49 @@ export abstract class Model<Attributes, PrimaryKey> {
     try {
       const rows: unknown[] = await (await connection).query({ namedPlaceholders: true, sql }, data);
       return Promise.resolve({ runResult: rows, object: data });
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  /**
+   * @param data - Every field must have a value or set to null.
+   * - Like: `{ id: foo.id, bar: null }`
+   * @param excludeData - Set fields to null to exclude them from updating
+   *  - Defaults to `{}`
+   */
+  public async upsert(data: Attributes, excludeData?: PartialNulls<Attributes>): Promise<unknown> {
+    if (this.isNotDefined) throw new Error("Model is not defined!");
+    const propNames = Object.getOwnPropertyNames(data);
+
+    const updateData: PartialNulls<Attributes> = {
+      ...data,
+      // Exclude fields in the update statement by setting them to null
+      ...excludeData,
+    };
+    const sql = `
+      INSERT INTO ${this.tableName} (${propNames}) VALUES (:${propNames.join(", :")})
+      ON DUPLICATE KEY UPDATE ${buildUpdateSetsFrom(updateData)};
+    `;
+    try {
+      const rows = await (await connection).query({ namedPlaceholders: true, sql }, data);
+      return Promise.resolve(rows);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  /** @param where - `[{foo: foo}, "AND", {bar: bar}, "OR", {fooBar: foo.bar}]` */
+  public async update(
+    data: Partial<Attributes>,
+    where: Partial<Attributes | "OR" | "AND" | "NOT">[]
+  ): Promise<unknown> {
+    if (this.isNotDefined) throw new Error("Model is not defined!");
+    const { data: whereData, whereString } = buildWhereClauseFrom(where);
+    const sql = `UPDATE ${this.tableName} SET ${buildUpdateSetsFrom(data)} WHERE ${whereString};`;
+    try {
+      const rows = await (await connection).query({ namedPlaceholders: true, sql }, Object.assign(data, whereData));
+      return Promise.resolve(rows);
     } catch (error) {
       return Promise.reject(error);
     }
