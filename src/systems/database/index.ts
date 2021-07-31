@@ -1,6 +1,8 @@
 import { Connection, createConnection } from "mariadb";
 import logger from "../../logger";
 import { LogFactory } from "./models/log";
+import { MonthFactory } from "./models/month";
+import { UserFactory } from "./models/user";
 
 let conn: Connection;
 
@@ -32,4 +34,6 @@ export async function Connect(): Promise<Connection> {
 
 export const connection = Connect();
 
+export const User = UserFactory.define();
 export const Log = LogFactory.define();
+export const Month = MonthFactory.define();

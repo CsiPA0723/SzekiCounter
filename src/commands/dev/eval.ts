@@ -3,7 +3,7 @@ import { Message } from "discord.js";
 import util from "util";
 import { Command } from "../../command-handler";
 import logger from "../../logger";
-import { Clean } from "../../utils/tools/clean";
+import { clean } from "../../utils/tools/clean";
 
 class Eval extends Command {
   public category = "Dev";
@@ -14,6 +14,11 @@ class Eval extends Command {
   public aliases = [];
   public desc = "Devtool";
 
+  constructor() {
+    super();
+    this.init();
+  }
+
   public async run(message: Message, args: string[]) {
     try {
       logger.warn(colors.red("WARN: eval being used by " + message.member.displayName));
@@ -21,11 +26,11 @@ class Eval extends Command {
       let evaled = eval(code);
 
       if (typeof evaled !== "string") evaled = util.inspect(evaled);
-      message.channel.send(Clean(evaled), { code: "xl", split: { char: "\n" } }).catch((error) => {
+      message.channel.send(clean(evaled), { code: "xl", split: { char: "\n" } }).catch((error) => {
         logger.error(`${error.name}: ${error.message}\nStack: ${error.stack}`);
       });
     } catch (error) {
-      message.channel.send(`\`ERROR\` \`\`\`xl\n${Clean(error)}\n\`\`\``).catch((error) => {
+      message.channel.send(`\`ERROR\` \`\`\`xl\n${clean(error)}\n\`\`\``).catch((error) => {
         logger.error(`${error.name}: ${error.message}\nStack: ${error.stack}`);
       });
       return Promise.reject(error);

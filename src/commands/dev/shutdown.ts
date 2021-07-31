@@ -11,6 +11,11 @@ class Shutdown extends Command {
   public aliases = ["sh", "shut"];
   public desc = "Shutdown listing";
 
+  constructor() {
+    super();
+    this.init();
+  }
+
   public async run(message: Message, args: string[]) {
     const shutdowns = ["shutdown", "shut", "s"];
     const updates = ["update", "upd", "up"];

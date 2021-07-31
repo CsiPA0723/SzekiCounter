@@ -6,7 +6,7 @@ import { GuildMember, Message } from "discord.js";
  * @param me If is this true and everyother option fails its going to return the message.member as a target.
  * @returns a discord guild member or nothing if me is false and everyother options fails
  */
-export default function GetMember(message: Message, args = new Array<string>(), me = true): GuildMember | null {
+export default function getMember(message: Message, args = new Array<string>(), me = true): GuildMember | null {
   if (!args[0]) args = [];
   const joinedArgs = args.join(" ").toLowerCase();
   let target = message.mentions.members.first() || message.guild.members.resolve(args[0]);

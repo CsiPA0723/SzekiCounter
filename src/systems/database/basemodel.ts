@@ -25,7 +25,7 @@ type PartialNulls<T> = {
   [P in keyof T]+?: null;
 };
 
-export abstract class Model<Attributes, PrimaryKey> {
+export abstract class Model<Attributes, PrimaryKey extends Record<string, unknown>> {
   public abstract tableName: string;
   public abstract columns: ModelColumns<Attributes>;
 
@@ -34,19 +34,21 @@ export abstract class Model<Attributes, PrimaryKey> {
   public async findByPK(primaryKey: PrimaryKey): Promise<Attributes> {
     if (!this.isDefined) throw new Error("Model is not defined!");
     try {
-      const sql = `SELECT * FROM ${this.tableName} WHERE ${Object.getOwnPropertyNames(primaryKey)[0]} = ?;`;
-      const rows: Attributes[] = await (await connection).query(sql, [primaryKey]);
+      const pkName = Object.getOwnPropertyNames(primaryKey)[0];
+      const sql = `SELECT * FROM ${this.tableName} WHERE ${pkName} = :${pkName};`;
+      const rows: Attributes[] = await (await connection).query({ namedPlaceholders: true, sql }, primaryKey);
       return Promise.resolve(rows?.[0]);
     } catch (error) {
       return Promise.reject(error);
     }
   }
 
-  public async deleteByPk(primaryKey: PrimaryKey): Promise<unknown[]> {
+  public async deleteByPk(primaryKey: PrimaryKey): Promise<unknown> {
     if (!this.isDefined) throw new Error("Model is not defined!");
     try {
-      const sql = `DELETE FROM ${this.tableName} WHERE ${Object.getOwnPropertyNames(primaryKey)[0]} = ?;`;
-      const rows: unknown[] = await (await connection).query(sql, [primaryKey]);
+      const pkName = Object.getOwnPropertyNames(primaryKey)[0];
+      const sql = `DELETE FROM ${this.tableName} WHERE ${pkName} = :${pkName};`;
+      const rows = await (await connection).query({ namedPlaceholders: true, sql }, primaryKey);
       return Promise.resolve(rows);
     } catch (error) {
       return Promise.reject(error);
@@ -144,9 +146,8 @@ export abstract class Model<Attributes, PrimaryKey> {
   public define(): this {
     if (this.isDefined) throw new Error("Model alredy defined!");
     try {
-      connection.then((conn) => {
-        conn.query(`CREATE TABLE IF NOT EXISTS ${this.tableName} (${buildColumnsFrom(this.columns).join(", ")});`);
-      });
+      const sql = `CREATE TABLE IF NOT EXISTS ${this.tableName} (${buildColumnsFrom(this.columns).join(", ")});`;
+      connection.then((conn) => conn.query(sql));
       this.isDefined = true;
       return this;
     } catch (error) {

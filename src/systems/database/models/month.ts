@@ -4,19 +4,18 @@ import { UserFactory } from "./user";
 
 type PrimaryKey = { id: number };
 
-type LogAttributes = PrimaryKey & {
+type MonthAttributes = PrimaryKey & {
   user_id: string;
-  timestamp: Date;
-  muted: 0 | 1;
-  connect: 0 | 1;
-  disconnect: 0 | 1;
+  date: Date;
+  active_time: number;
+  inactive_time: number;
   /** Left voice chat or muted themselfs without a word. */
-  szekizett: 0 | 1;
+  szekizes: number;
 };
 
-class LogModel extends Model<LogAttributes, PrimaryKey> {
-  public readonly tableName = "logs";
-  public readonly columns: ModelColumns<LogAttributes> = {
+class MonthModel extends Model<MonthAttributes, PrimaryKey> {
+  public readonly tableName = "months";
+  public readonly columns: ModelColumns<MonthAttributes> = {
     id: {
       type: `${DataTypes.INT}(10) unsigned`,
       primaryKey: true,
@@ -29,31 +28,26 @@ class LogModel extends Model<LogAttributes, PrimaryKey> {
         foreignKey: nameof(UserFactory.columns.id),
       },
     },
-    timestamp: {
-      type: DataTypes.TIMESTAMP,
+    date: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
-    muted: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
+    active_time: {
+      type: `${DataTypes.BIGINT}(20) unsigned`,
       defaultValue: 0,
+      allowNull: false,
     },
-    connect: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
+    inactive_time: {
+      type: `${DataTypes.BIGINT}(20) unsigned`,
       defaultValue: 0,
+      allowNull: false,
     },
-    disconnect: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
+    szekizes: {
+      type: `${DataTypes.INT}(10) unsigned`,
       defaultValue: 0,
-    },
-    szekizett: {
-      type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: 0,
     },
   };
 }
 
-export const LogFactory = new LogModel();
+export const MonthFactory = new MonthModel();
