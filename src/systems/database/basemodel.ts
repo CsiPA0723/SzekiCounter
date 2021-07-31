@@ -20,6 +20,7 @@ export type ModelColumns<T> = {
   };
 };
 
+/** Make properties in T optional and null */
 type PartialNulls<T> = {
   [P in keyof T]+?: null;
 };
@@ -85,12 +86,12 @@ export abstract class Model<Attributes, PrimaryKey> {
     }
   }
 
-  public async create(data: Attributes): Promise<{ runResult: unknown[]; object: Attributes }> {
+  public async create(data: Attributes): Promise<{ runResult: unknown; object: Attributes }> {
     if (!this.isDefined) throw new Error("Model is not defined!");
     const propNames = Object.getOwnPropertyNames(data);
     const sql = `INSERT INTO ${this.tableName} (${propNames.join(", ")}) VALUES (:${propNames.join(", :")});`;
     try {
-      const rows: unknown[] = await (await connection).query({ namedPlaceholders: true, sql }, data);
+      const rows = await (await connection).query({ namedPlaceholders: true, sql }, data);
       return Promise.resolve({ runResult: rows, object: data });
     } catch (error) {
       return Promise.reject(error);
