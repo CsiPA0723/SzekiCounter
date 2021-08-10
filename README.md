@@ -5,5 +5,5 @@ A custom made discord bot for keeping track of how many times a user has gone af
 ## How to Build
 
 * Download the repository
-* Open a console inside the direcory
+* Open a console inside the directory
 * Run `yarn install` then `yarn run build` inside the console
